@@ -1,7 +1,7 @@
 # 🌍 EcoWatch : Plateforme de Collecte et d'Analyse Environnementale
 
 ## 📝 Présentation du Projet
-EcoWatch est une application de **science citoyenne** développée pour le TP d'INF222. Elle permet aux utilisateurs de signaler en temps réel des incidents environnementaux (pollution plastique, décharges sauvages, etc.) afin de constituer une base de données exploitable pour l'analyse descriptive.
+EcoWatch est une application de **science citoyenne** développée pour le TP d'INF232. Elle permet aux utilisateurs de signaler en temps réel des incidents environnementaux (pollution plastique, décharges sauvages, etc.) afin de constituer une base de données exploitable pour l'analyse descriptive.
 
 ## 🚀 Fonctionnalités Clés
 - **Collecte de données robuste :** Formulaire avec validation des types de pollution, niveaux de gravité et localisation.
