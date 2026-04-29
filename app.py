@@ -5,7 +5,7 @@ import datetime
 
 # 1. Infos Étudiant (Sidebar)
 st.sidebar.title("🎓 Identification")
-st.sidebar.info("Shiwun Mukong Darlinton\nMatricule : [TON_MATRICULE]")
+st.sidebar.info("Shiwun Mukong Darlinton\nMatricule : 24G2337")
 
 # 2. Gestion des données
 DB_FILE = "data_collecte.csv"
