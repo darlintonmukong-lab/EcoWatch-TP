@@ -1,68 +1,62 @@
 import streamlit as st
 import pandas as pd
-import datetime
 import os
+import datetime
 
-# Configuration de la page
-st.set_page_config(page_title="EcoWatch Pro", page_icon="🌍", layout="wide")
+# 1. Infos Étudiant (Sidebar)
+st.sidebar.title("🎓 Identification")
+st.sidebar.info("Shiwun Mukong Darlinton\nMatricule : [TON_MATRICULE]")
 
-# Fichier de stockage permanent
+# 2. Gestion des données
 DB_FILE = "data_collecte.csv"
-
-# Charger les données existantes
 if os.path.exists(DB_FILE):
-    st.session_state.db = pd.read_csv(DB_FILE)
+    df = pd.read_csv(DB_FILE)
 else:
-    st.session_state.db = pd.DataFrame(columns=['Date', 'Type', 'Gravité', 'Quartier', 'Description'])
+    df = pd.DataFrame(columns=['Date', 'Type', 'Gravité', 'Quartier', 'Description'])
 
-st.title("🌍 EcoWatch : Collecte & Analyse Environnementale")
+# 3. Interface Principale
+st.title("🌍 EcoWatch Pro : Yaoundé Clean City")
 st.markdown("---")
 
-# --- SECTION 1 : COLLECTE ---
-with st.sidebar:
-    st.header("📝 Nouvelle Collecte")
-    with st.form("form_signalement", clear_on_submit=True):
-        type_pollution = st.selectbox("Type de pollution", ["Plastique", "Décharge sauvage", "Eaux usées", "Air", "Nuisance Sonore"])
-        gravite = st.select_slider("Niveau de gravité", options=range(1, 11), value=5)
-        quartier = st.text_input("Quartier", placeholder="Ex: Bastos, Melen...")
-        description = st.text_area("Observations additionnelles")
-        date_obs = st.date_input("Date de l'observation", datetime.date.today())
-        submit = st.form_submit_button("Enregistrer le signalement")
+col1, col2 = st.columns(2)
 
-if submit:
-    if not quartier:
-        st.error("La localisation est obligatoire.")
-    else:
-        new_entry = {'Date': str(date_obs), 'Type': type_pollution, 'Gravité': gravite, 'Quartier': quartier, 'Description': description}
-        st.session_state.db = pd.concat([st.session_state.db, pd.DataFrame([new_entry])], ignore_index=True)
-        st.session_state.db.to_csv(DB_FILE, index=False)
+with col1:
+    st.subheader("📝 Nouveau Signalement")
+    with st.form("main_form", clear_on_submit=True):
+        t_pollution = st.selectbox("Type de pollution", ["Plastique", "Décharge sauvage", "Eaux usées", "Fumée/Air"])
+        
+        # LISTE INTELLIGENTE DES QUARTIERS
+        quartiers = ["Bastos", "Biyem-Assi", "Mendong", "Etoudi", "Ngousso", "Mvan", "Obili", "AUTRE..."]
+        selection = st.selectbox("Quartier", quartiers)
+        
+        # Champ qui n'apparaît que si on choisit "AUTRE..."
+        q_final = ""
+        if selection == "AUTRE...":
+            q_final = st.text_input("Précisez le quartier :")
+        else:
+            q_final = selection
+
+        n_gravite = st.slider("Niveau de gravité (1-10)", 1, 10, 5)
+        obs = st.text_area("Description")
+        btn = st.form_submit_button("Enregistrer")
+
+    if btn:
+        new_row = {'Date': str(datetime.date.today()), 'Type': t_pollution, 'Gravité': n_gravite, 'Quartier': q_final, 'Description': obs}
+        df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
+        df.to_csv(DB_FILE, index=False)
         st.success("✅ Donnée enregistrée !")
 
-# --- SECTION 2 : ANALYSE DESCRIPTIVE ---
-if not st.session_state.db.empty:
-    total_obs = len(st.session_state.db)
-    moyenne = st.session_state.db['Gravité'].mean()
-    
-    col1, col2, col3 = st.columns(3)
-    col1.metric("Total Signalements", total_obs)
-    col2.metric("Gravité Moyenne", f"{moyenne:.1f} / 10")
-    
-    if moyenne > 7: col3.error("🚨 État : Alerte Critique")
-    elif moyenne > 4: col3.warning("⚠️ État : Vigilance")
-    else: col3.success("✅ État : Stable")
+with col2:
+    st.subheader("📊 Analyse Descriptive")
+    if not df.empty:
+        st.metric("Total Signalements", len(df))
+        st.metric("Gravité Moyenne", f"{df['Gravité'].mean():.1f}/10")
+        
+        # Le graphique qui va impressionner le prof
+        st.bar_chart(df['Quartier'].value_counts())
+    else:
+        st.info("Ajoutez une donnée pour voir l'analyse.")
 
-    st.markdown("### 📊 Visualisation des données")
-    c1, c2 = st.columns(2)
-    with c1:
-        st.write("**Répartition par type**")
-        st.bar_chart(st.session_state.db['Type'].value_counts())
-    with c2:
-        st.write("**Évolution de la gravité**")
-        st.line_chart(st.session_state.db.set_index('Date')['Gravité'])
-
-    st.dataframe(st.session_state.db, use_container_width=True)
-    csv = st.session_state.db.to_csv(index=False).encode('utf-8')
-    st.download_button("📥 Exporter les données (CSV)", data=csv, file_name="export_ecowatch.csv", mime="text/csv")
-else:
-    st.info("👋 Bienvenue ! Remplissez le formulaire à gauche.")
-
+# Affichage du tableau en bas
+st.markdown("---")
+st.dataframe(df, use_container_width=True)
